@@ -19,6 +19,7 @@ public interface AbstractSyntaxTree<T>
      * @return a deep copy of tree
      */
     AbstractSyntaxTree<T> deepCopyFactory(AbstractSyntaxTree<T> tree);
+    
     /**
      * Method creates a new tree with the contents provided, and no
      * children
@@ -27,12 +28,14 @@ public interface AbstractSyntaxTree<T>
      * @return constructed tree
      */ 
     AbstractSyntaxTree<T> factory(T contents);
+    
     /**
      * Method adds the child tree to this tree
      * 
      * @param child (subtree) to add
      */ 
     void addChild(AbstractSyntaxTree<T> child);
+    
     /**
      * Method returns the contents of the node at the top of
      * the tree (i.e. head)
@@ -40,6 +43,7 @@ public interface AbstractSyntaxTree<T>
      * @return The contents at the top of the tree
      */ 
     T getContents();
+    
     /**
      * Method returns all the subtrees beneath the head of this 
      * tree, in list

@@ -23,24 +23,24 @@ public class AST<T> implements AbstractSyntaxTree<T>
     // uses tree argument for a deep copy constructor
     private AST(AbstractSyntaxTree<T> tree){
         this.contents = tree.getContents();
-        for (AbstractSyntaxTree a : tree.getSubtrees())
+        for (AbstractSyntaxTree<T> a : tree.getSubtrees())
             tree.addChild(deepCopy(a));
     }
     
     @Override
     public AbstractSyntaxTree<T> deepCopyFactory(AbstractSyntaxTree<T> tree){
-        return new AST(tree);
+        return new AST<T>(tree);
     }
     
     @Override
     public AbstractSyntaxTree<T> factory(T contents){
-        return new AST(contents);
+        return new AST<T>(contents);
     }
     
     // Method recusively copies argument tree to create a deep copy 
     private AbstractSyntaxTree<T> deepCopy(AbstractSyntaxTree<T> tree) {
-        AbstractSyntaxTree temp = new AST(tree.getContents());
-        for (AbstractSyntaxTree a : tree.getSubtrees())
+        AbstractSyntaxTree<T> temp = new AST<>(tree.getContents());
+        for (AbstractSyntaxTree<T> a : tree.getSubtrees())
             tree.addChild(deepCopy(a));
         return temp;    
     }
@@ -62,8 +62,8 @@ public class AST<T> implements AbstractSyntaxTree<T>
     
     @Override
     public boolean equals(Object obj) {
-        if (obj instanceof AST) { // false if not same type
-            AST temp = (AST) obj;
+        if (obj instanceof AST<?>) { // false if not same type
+            AST<?> temp = (AST<?>) obj;
             if (this.contents.equals(temp.contents)){ // false if contents not the same
                 if (this.children.size() == temp.children.size()){ 
                     for (int i=0; i< this.children.size(); i++){
