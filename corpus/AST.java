@@ -2,6 +2,9 @@ package corpus;
 
 import java.util.List;
 import java.util.ArrayList;
+/**
+ * Concrete implementation of the AbstractSyntaxTree
+ */
 @Preamble(
     author = "Jonathan Fieldsend",
     date = "15/09/2015",
@@ -34,7 +37,7 @@ public class AST<T> implements AbstractSyntaxTree<T>
         return new AST(contents);
     }
     
-    
+    // Method recusively copies argument tree to create a deep copy 
     private AbstractSyntaxTree<T> deepCopy(AbstractSyntaxTree<T> tree) {
         AbstractSyntaxTree temp = new AST(tree.getContents());
         for (AbstractSyntaxTree a : tree.getSubtree())
@@ -53,7 +56,7 @@ public class AST<T> implements AbstractSyntaxTree<T>
     }
     
     @Override
-    public List<AbstractSyntaxTree<T>> getSubtree() {
+    public List<AbstractSyntaxTree<T>> getSubtrees() {
         return children;
     }
     
@@ -65,7 +68,7 @@ public class AST<T> implements AbstractSyntaxTree<T>
                 if (this.children.size() == temp.children.size()){ 
                     for (int i=0; i< this.children.size(); i++){
                         if (this.children.get(i).equals(temp.children.get(i))==false){
-                            return false; // false if any children are not the same
+                            return false; // false if any children (subtrees) are not the same
                         }
                     }
                     return true; // entire tree matches  
