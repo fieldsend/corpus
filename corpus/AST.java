@@ -16,25 +16,15 @@ public class AST<T> implements AbstractSyntaxTree<T>
     private T contents;
     
     // generate a new instance with contents argument, and no children
-    private AST(T contents){
+    AST(T contents){
         this.contents = contents;
     }
     
     // uses tree argument for a deep copy constructor
-    private AST(AbstractSyntaxTree<T> tree){
+    AST(AbstractSyntaxTree<T> tree){
         this.contents = tree.getContents();
         for (AbstractSyntaxTree<T> a : tree.getSubtrees())
             tree.addChild(deepCopy(a));
-    }
-    
-    @Override
-    public AbstractSyntaxTree<T> deepCopyFactory(AbstractSyntaxTree<T> tree){
-        return new AST<T>(tree);
-    }
-    
-    @Override
-    public AbstractSyntaxTree<T> factory(T contents){
-        return new AST<T>(contents);
     }
     
     // Method recusively copies argument tree to create a deep copy 
