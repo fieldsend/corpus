@@ -11,15 +11,20 @@ import java.nio.file.FileVisitResult;
 import java.util.List;
 import java.util.ArrayList;
 
+/**
+ * Class provides utility to obtain list of files confirming to
+ * extension of programming language required for corpus 
+ */ 
 @Preamble(
     author = "Jonathan Fieldsend",
     date = "15/09/2015"
+    lastModified = "16/09/2015"
 )
 class FileProcessor extends SimpleFileVisitor<Path>
 {
     private List<Path> files = new ArrayList<>();
     private String fileExtension;
-    FileProcessor(String directoryName, String fileExtension) 
+    private FileProcessor(String directoryName, String fileExtension) 
     throws IOException {
         this.fileExtension = fileExtension;
         Files.walkFileTree(Paths.get(directoryName), this);
@@ -48,7 +53,16 @@ class FileProcessor extends SimpleFileVisitor<Path>
         return FileVisitResult.CONTINUE;
     }
     
-    List<Path> getList() {
-        return files;
+    /**
+     * Method returns the list of paths to files in directoryName and any of its
+     * subdirectories, which end with the specified file extension
+     * 
+     * @param directoryName name of root directory to search in
+     * @param fileExtension extension files must have to be returned in the list
+     * @return list of paths to files
+     */ 
+    static List<Path> getList(String directoryName, String fileExtension) {
+        FileProcessor temp = new FileProcessor(directoryName, fileExtension);
+        return temp.files;
     }
 }
