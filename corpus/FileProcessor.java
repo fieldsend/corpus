@@ -17,7 +17,7 @@ import java.util.ArrayList;
  */ 
 @Preamble(
     author = "Jonathan Fieldsend",
-    date = "15/09/2015"
+    date = "15/09/2015",
     lastModified = "16/09/2015"
 )
 class FileProcessor extends SimpleFileVisitor<Path>
@@ -61,7 +61,8 @@ class FileProcessor extends SimpleFileVisitor<Path>
      * @param fileExtension extension files must have to be returned in the list
      * @return list of paths to files
      */ 
-    static List<Path> getList(String directoryName, String fileExtension) {
+    static List<Path> getList(String directoryName, String fileExtension) 
+    throws IOException {
         FileProcessor temp = new FileProcessor(directoryName, fileExtension);
         return temp.files;
     }
