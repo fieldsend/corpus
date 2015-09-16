@@ -1,0 +1,9 @@
+*.class
+*.txt
+*.ctxt
+*.html
+*.ss
+*.gif
+*.css
+*.bluej
+*package-list
