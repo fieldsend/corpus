@@ -14,13 +14,15 @@ import java.util.Collections;
 )
 public class SchemeCorpus implements Corpus<String>
 {
-    private static Map<AbstractSyntaxTree<String>,List<AbstractSyntaxTree<String>>> fragmentMap = new HashMap<>();
-    private static ASTCreator<String> treeCreator = new ASTCreator<>();
     private static Random randomGenerator = new Random();
+    
+    private Map<AbstractSyntaxTree<String>,List<AbstractSyntaxTree<String>>> fragmentMap = new HashMap<>();
+    private TreeCreator<String> treeCreator;
     private int depth;
     
-    SchemeCorpus(int depth){
+    SchemeCorpus(int depth, TreeCreator<String> treeCreator){
         this.depth = depth;
+        this.treeCreator = treeCreator;
     }
     
     @Override

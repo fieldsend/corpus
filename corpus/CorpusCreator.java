@@ -14,6 +14,6 @@ public interface CorpusCreator<T>
      * @param depth depth to be used in generating fragments
      * @return a Corpus instance
      */
-    Corpus<T> factory(int depth);
+    Corpus<T> factory(int depth, TreeCreator<T> treeCreator);
     
 }

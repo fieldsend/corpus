@@ -10,7 +10,7 @@ package corpus;
 public class SchemeCorpusCreator implements CorpusCreator<String>
 {
     @Override
-    public Corpus<String> factory(int depth){
-        return new SchemeCorpus(depth);
+    public Corpus<String> factory(int depth, TreeCreator<String> treeCreator){
+        return new SchemeCorpus(depth,treeCreator);
     }
 }
