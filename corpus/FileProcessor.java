@@ -20,11 +20,11 @@ import java.util.ArrayList;
     date = "15/09/2015",
     lastModified = "16/09/2015"
 )
-class FileProcessor extends SimpleFileVisitor<Path>
+public class FileProcessor extends SimpleFileVisitor<Path>
 {
     private List<Path> files = new ArrayList<>();
     private String fileExtension;
-    private FileProcessor(String directoryName, String fileExtension) 
+    public FileProcessor(String directoryName, String fileExtension) 
     throws IOException {
         this.fileExtension = fileExtension;
         Files.walkFileTree(Paths.get(directoryName), this);
