@@ -1,6 +1,8 @@
 package corpus;
 
-
+/**
+ * Class provides methods to return AST instances
+ */
 @Preamble(
     author = "Jonathan Fieldsend",
     date = "15/09/2015",

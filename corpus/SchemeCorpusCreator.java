@@ -1,6 +1,8 @@
 package corpus;
 
-
+/**
+ * Class provides a factory method to return a SchemeCorpus
+ */
 @Preamble(
     author = "Jonathan Fieldsend",
     date = "18/09/2015",

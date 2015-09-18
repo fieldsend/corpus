@@ -2,6 +2,10 @@ package corpus;
 
 import java.nio.file.Path;
 
+/**
+ * Defines methods all programs to be loaded/evolved/manipulated 
+ * must provide
+ */
 @Preamble(
     author = "Jonathan Fieldsend",
     date = "15/09/2015"

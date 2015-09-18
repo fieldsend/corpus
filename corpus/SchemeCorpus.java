@@ -8,6 +8,9 @@ import java.util.ArrayList;
 import java.util.Random;
 import java.util.Collections;
 
+/**
+ * Class manages a corpus of Scheme programs
+ */
 @Preamble(
     author = "Jonathan Fieldsend",
     date = "16/09/2015"

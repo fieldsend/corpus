@@ -24,14 +24,14 @@ public class AST<T> implements AbstractSyntaxTree<T>
     AST(AbstractSyntaxTree<T> tree){
         this.contents = tree.getContents();
         for (AbstractSyntaxTree<T> a : tree.getSubtrees())
-            tree.addChild(deepCopy(a));
+            this.addChild(deepCopy(a));
     }
     
     // Method recusively copies argument tree to create a deep copy 
     private AbstractSyntaxTree<T> deepCopy(AbstractSyntaxTree<T> tree) {
         AbstractSyntaxTree<T> temp = new AST<>(tree.getContents());
         for (AbstractSyntaxTree<T> a : tree.getSubtrees())
-            tree.addChild(deepCopy(a));
+            temp.addChild(deepCopy(a));
         return temp;    
     }
     

@@ -1,6 +1,9 @@
 package corpus;
 
-
+/**
+ * Defines the factory methods required to provide concrete
+ * Corpus instances
+ */
 @Preamble(
     author = "Jonathan Fieldsend",
     date = "16/09/2015",

@@ -1,6 +1,5 @@
 package corpus;
 
-import jscheme.JScheme;
 import java.nio.file.Path;
 import java.util.List;
 import java.util.ArrayList;
@@ -9,6 +8,10 @@ import java.util.HashMap;
 import java.util.Random;
 import java.util.Collections;
 
+/**
+ * Class represents Scheme programs and maintains raw program Strings as well as
+ * AbstractSyntaxTree representations
+ */
 @Preamble(
     author = "Jonathan Fieldsend",
     date = "15/09/2015"

@@ -2,7 +2,10 @@ package corpus;
 
 import java.util.Map;
 import java.util.List;
-
+/**
+ * Defines the methods all program corpi need to provide for their access
+ * and minipulation
+ */
 @Preamble(
     author = "Jonathan Fieldsend",
     date = "16/09/2015",

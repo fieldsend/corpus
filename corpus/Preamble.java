@@ -1,7 +1,9 @@
 package corpus;
 import java.lang.annotation.Documented;
 
-
+/**
+ * Preamble information for classes in package
+ */
 @Preamble(
     author = "Jonathan Fieldsend",
     date = "15/09/2015",
