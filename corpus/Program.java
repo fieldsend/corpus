@@ -11,11 +11,6 @@ public interface Program<T>
     void setProgram(Path file);
     void setProgram(AbstractSyntaxTree<T> tree);
     void setProgram(String s);
-    void addTest(Path file);
-    int getNumberOfTests();
-    void mutate();
-    void setDepth(int depth);
-    Number getFitness();
     AbstractSyntaxTree<T> getProgramAsTree();
     String getProgramAsString();
 }

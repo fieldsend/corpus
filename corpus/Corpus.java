@@ -5,7 +5,8 @@ import java.util.List;
 
 @Preamble(
     author = "Jonathan Fieldsend",
-    date = "16/09/2015"
+    date = "16/09/2015",
+    lastModified = "19/09/2015"
 )
 public interface Corpus<T>
 {
@@ -36,4 +37,13 @@ public interface Corpus<T>
      * @return probability of the program being randomly generated from the corpus
      */
     double probabilityOfProgram(Program<T> program);
+    
+    
+    /**
+     * Mutates the argument given the data in the corpus
+     * 
+     * @param tree to mutate
+     * @return a mutated version of the argument
+     */
+    AbstractSyntaxTree<T> mutate(AbstractSyntaxTree<T> treeToMutate);
 }

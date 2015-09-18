@@ -59,7 +59,23 @@ public class SchemeCorpus implements Corpus<String>
         return -1.0;
     }
     
+    @Override
+    public AbstractSyntaxTree<String> mutate(AbstractSyntaxTree<String> tree) {
+        return generateMutation(tree);
+    }
     
+    
+    private AbstractSyntaxTree<String> generateMutation(AbstractSyntaxTree<String> tree) {
+        if (randomGenerator.nextDouble() < 0.3) 
+            return generateExpand(extract(tree,depth));
+        else {
+            List<AbstractSyntaxTree<String>> children = tree.getSubtrees();
+            for (int i=0; i<children.size(); i++) {
+                children.set(i,generateMutation(children.get(i))); 
+            }
+            return tree;
+        } 
+    }
     
     private double generateProbabilityOfProgram(AbstractSyntaxTree<String> tree){
         AbstractSyntaxTree<String> fragHead = extract(tree, depth); 
@@ -158,5 +174,7 @@ public class SchemeCorpus implements Corpus<String>
         }
         return extendedFragment;
     }
+    
+    
     
 }

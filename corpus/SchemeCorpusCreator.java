@@ -1,12 +1,11 @@
 package corpus;
 
 
-/**
- * Write a description of class SchemeCorpusCreator here.
- * 
- * @author (your name) 
- * @version (a version number or a date)
- */
+@Preamble(
+    author = "Jonathan Fieldsend",
+    date = "18/09/2015",
+    lastModified = "19/09/2015"
+)
 public class SchemeCorpusCreator implements CorpusCreator<String>
 {
     @Override

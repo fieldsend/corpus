@@ -3,7 +3,8 @@ package corpus;
 
 @Preamble(
     author = "Jonathan Fieldsend",
-    date = "16/09/2015"
+    date = "16/09/2015",
+    lastModified = "19/09/2015"
 )
 public interface CorpusCreator<T>
 {
