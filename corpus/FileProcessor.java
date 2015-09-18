@@ -24,7 +24,7 @@ public class FileProcessor extends SimpleFileVisitor<Path>
 {
     private List<Path> files = new ArrayList<>();
     private String fileExtension;
-    public FileProcessor(String directoryName, String fileExtension) 
+    private FileProcessor(String directoryName, String fileExtension) 
     throws IOException {
         this.fileExtension = fileExtension;
         Files.walkFileTree(Paths.get(directoryName), this);
