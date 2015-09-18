@@ -16,6 +16,5 @@ public class ASTCreator<T> implements TreeCreator<T>
     @Override
     public AbstractSyntaxTree<T> factory(T contents){
         return new AST<T>(contents);
-    }
-    
+    }    
 }

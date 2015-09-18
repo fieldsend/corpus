@@ -14,6 +14,7 @@ public interface Program<T>
     void addTest(Path file);
     int getNumberOfTests();
     void mutate();
+    void setDepth(int depth);
     Number getFitness();
     AbstractSyntaxTree<T> getProgramAsTree();
     String getProgramAsString();
