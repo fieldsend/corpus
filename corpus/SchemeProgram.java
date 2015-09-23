@@ -1,27 +1,32 @@
 package corpus;
 
 import java.nio.file.Path;
+import java.nio.charset.StandardCharsets;
+import java.io.IOException;
 import java.util.List;
 import java.util.ArrayList;
 import java.util.Map;
 import java.util.HashMap;
 import java.util.Random;
 import java.util.Collections;
+import org.apache.commons.io.FileUtils;
 
 /**
  * Class represents Scheme programs and maintains raw program Strings as well as
- * AbstractSyntaxTree representations
+ * Expr representations
  */
 @Preamble(
     author = "Jonathan Fieldsend",
-    date = "15/09/2015"
+    date = "15/09/2015",
+    lastModified = "21/09/2015",
+    lastModifiedBy = "Jonathan Fieldsend"
 )
-class SchemeProgram implements Program<String>
+class SchemeProgram implements Program
 {
     private static Random randomGenerator = new Random();
-    private AbstractSyntaxTree<String> tree;
+    private static Parser parser = new Parser();
+    private Expr expression;
     private String programAsString;
-    private boolean evaluated = false;
     private int fitness = 0; 
     private Path file;
     //private AST tree;
@@ -29,65 +34,34 @@ class SchemeProgram implements Program<String>
     SchemeProgram(){ }
     
     @Override
-    public void setProgram(Path file){
+    public void setProgram(Path file) 
+    throws IOException, Exception {
         this.file = file;
         readInFile(file);
-        updateTreeRepresentation();
-        evaluated = false;
     }
     
-    // TODO
-    private void readInFile(Path file) {
-        this.programAsString = null;
-    }
-    
-    //TODO
-    private void updateTreeRepresentation() {
-        
-    }
-    
-    //TODO
-    private void updateStringRepresentation() {
-        
+    private void readInFile(Path file) 
+    throws IOException, Exception {
+        this.programAsString = FileUtils.readFileToString(file.toFile(), StandardCharsets.UTF_8);
+        setProgram(programAsString);
     }
     
     @Override
-    public void setProgram(AbstractSyntaxTree<String> tree) {
-        this.tree = tree;
-        updateStringRepresentation();
-        evaluated = false;
+    public void setProgram(Expr expression) {
+        this.expression = expression;
+        programAsString = expression.toString();
     }
     
     @Override
-    public void setProgram(String s){
+    public void setProgram(String s) 
+    throws Exception {
         this.programAsString = s;
-        updateTreeRepresentation();
-        evaluated = false;
+        this.expression = parser.parse(s);
     }
 
-    
-    /* TO DO in different class
-    private void evaluateOnTestProblems() {
-        fitness = 0;
-        JScheme interpreter = new JScheme();
-        interpreter.load(programAsString);
-    
-        String name = extractProgramName();
-        for (TestInputOutput t : tests){
-            Object ouput = interpreter.call(name, t.getInputs());
-            fitness += t.compareToOutput(output);
-        }
-        
-    }
-    
-    //TODO
-    private String extractProgramName() {
-        
-    }*/
-    
     @Override
-    public AbstractSyntaxTree<String> getProgramAsTree() {
-        return tree; 
+    public Expr getProgramAsExpression() {
+        return expression; 
     } 
     
     @Override

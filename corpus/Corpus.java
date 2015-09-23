@@ -11,7 +11,7 @@ import java.util.List;
     date = "16/09/2015",
     lastModified = "19/09/2015"
 )
-public interface Corpus<T>
+public interface Corpus
 {
     /**
      * Method returns map of fragments to extended fragments (one level deeper)
@@ -19,34 +19,34 @@ public interface Corpus<T>
      * 
      * @return fragment map
      */
-    Map<AbstractSyntaxTree<T>,List<AbstractSyntaxTree<T>>> getFragmentMap();
+    Map<Expr,List<Expr>> getFragmentMap();
      
     /**
-     * Add program to the corpus, to be fragmented and mapped. If setDepth
+     * Add program to the corpus, to be fragmented and mapped.
      */
-    void addToCorpus(Program<T> program);
+    void addToCorpus(Program program);
     
     /**
-     * Generate a random tree from the corpus. Will return null if the corpus has 
+     * Generate a random expression from the corpus. Will return null if the corpus has 
      * not had any programs added to it
      * 
      * @return tree randomly generated from the corpus
      */
-    AbstractSyntaxTree<T> generateRandomTree();
+    Expr generateRandomExpression();
     
     /**
      * Gives the probability of a program given the corpus contents
      * 
      * @return probability of the program being randomly generated from the corpus
      */
-    double probabilityOfProgram(Program<T> program);
+    double probabilityOfProgram(Program program);
     
     
     /**
      * Mutates the argument given the data in the corpus
      * 
-     * @param tree to mutate
+     * @param expression to mutate
      * @return a mutated version of the argument
      */
-    AbstractSyntaxTree<T> mutate(AbstractSyntaxTree<T> treeToMutate);
+    Expr mutate(Expr expressionToMutate);
 }
