@@ -52,7 +52,7 @@ public class SchemeCorpus implements Corpus
         if (depth == 1){ // bigrams
             return generateLogProbabilityOfProgram(Expr.list(Expr.atom("start"), expression));
         }
-        if (depth == 3) { //trigrams
+        if (depth == 2) { //trigrams
             return generateLogProbabilityOfProgram(Expr.list(Expr.atom("start"), Expr.atom("start"), expression));
         }
         return -1.0;
@@ -82,14 +82,16 @@ public class SchemeCorpus implements Corpus
         Expr fragHead = extract(expression, depth); 
         Expr fragTail = extract(expression, depth+1);
         
-        if (fragHead.equals(fragTail))
-            return 0.0;
+        if (fragHead.equals(fragTail)){
+           return 0.0;
+        }
         double prob;    
+        
         if (fragmentMap.containsKey(fragHead)){
             prob = ((double) Collections.frequency(fragmentMap.get(fragHead),fragTail))/fragmentMap.get(fragHead).size();
-            prob = Math.log(1.0*prob);
-        } else {     
-            return Math.log(0.0);
+            prob = safeLog(1.0*prob);
+        } else {  
+            return safeLog(0.0);
         }    
         if (expression instanceof Expr.ExprList) 
             for (int i=1; i<((Expr.ExprList) expression).size(); i++) 
@@ -98,13 +100,17 @@ public class SchemeCorpus implements Corpus
         return prob;    
     }   
     
+    private static double safeLog(double value) {
+        return (value <= 0.0) ? Double.NEGATIVE_INFINITY : Math.log10(value);
+    }
+    
     private void fragment(Expr expression) {
         if (depth == 0) // unigrams
             generateFragment(expression);
         if (depth == 1){ // bigrams
             generateFragment(Expr.list(Expr.atom("start"), expression));
         }
-        if (depth == 3) { //trigrams
+        if (depth == 2) { //trigrams
             generateFragment(Expr.list(Expr.atom("start"), Expr.atom("start"), expression));
         }
     }
@@ -133,7 +139,7 @@ public class SchemeCorpus implements Corpus
     }
     
     private Expr extract(Expr expression, int depth) {
-        if ((depth == 0) || (expression instanceof Expr.Atom))
+        if (depth == 0)
             return Expr.atom("_");
         if (expression instanceof Expr.ExprList){
             Expr.ExprList temp;    
@@ -158,7 +164,7 @@ public class SchemeCorpus implements Corpus
         if (depth == 1){ // bigrams
             return generateExpand(Expr.list(Expr.atom("start"), Expr.atom("_")));
         }
-        if (depth == 3) { //trigrams
+        if (depth == 2) { //trigrams
             return generateExpand(Expr.list(Expr.atom("start"), Expr.atom("start"),Expr.atom("_")));
         }
         return null;

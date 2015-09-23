@@ -12,7 +12,7 @@ public class Parser {
 	
 	///////////////////////////////
 	
-	public Expr
+	public Expr 
 	parse(String s) throws Exception {
 		
 	    // in = s;
@@ -105,12 +105,16 @@ public class Parser {
 	        buf += cur();
 	        match(cur());
 	    }
+	    
+	    /****
 	    // determine what's in the buffer
 	    if (isNumber(buf)) {
 	        return new Expr.Atom( new BigDecimal(buf) );
 	    } else {
 	        return new Expr.Atom( Symbol.getSymbol(buf) );
 	    }
+	    ****/
+	    return new Expr.Atom( buf.trim() );
 	}
 }
 

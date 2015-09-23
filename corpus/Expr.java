@@ -1,16 +1,15 @@
 package corpus;
 
 import java.util.ArrayList;
+import java.util.List;
+
+import jeep.lang.Diag;
 
 import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
 
 //////////////////////////////////////////////////////////////////////
-@Preamble(
-    author = "Jerry Swan",
-    date = "20/09/2015",
-    lastModified = "21/09/2015"
-)
+
 public interface Expr {
 
 	static Expr atom( Object o ) {
@@ -21,22 +20,10 @@ public interface Expr {
 		return new ExprList( args );
 	}
 	
-	/****
 	static ExprList list( Expr e1 ) {
 		return new ExprList( e1 );
 	}
 	
-	static ExprList list( Expr e1, Expr e2 ) {
-		return new ExprList( e1, e2 );
-	}
-	
-	static ExprList list( Expr e1, Expr e2, Expr e3 ) {
-		return new ExprList( e1, e2, e3 );
-	}
-	static ExprList list( Expr e1, Expr e2, Expr e3, Expr e4 ) {
-		return new ExprList( e1, e2, e3, e4 );
-	}
-****/
 	///////////////////////////////
 	
 	public static final class Atom implements Expr {
@@ -57,6 +44,18 @@ public interface Expr {
 		@Override
 		public boolean equals( Object o ) {
 			return EqualsBuilder.reflectionEquals( this, o );
+			/*********
+			if( !( o instanceof Atom ) ) 
+				return false;
+			
+			Atom rhs = (Atom)o;
+			Diag.println( value.getClass() + " " + rhs.value.getClass() );
+			
+			final boolean result = value.equals( rhs.value );
+			// return value.equals( rhs.value );
+			Diag.println( "<<" + value + ">>"  + " equals <<" + rhs.value + ">>? " + result );
+			return result;
+			*********/
 		}
 		
 		@Override
@@ -68,36 +67,28 @@ public interface Expr {
 	///////////////////////////////	
 
 	public static final class ExprList 
-	extends ArrayList< Expr > implements Expr {
+	// extends ArrayList< Expr > 
+	implements Expr {
 
-		private static final long serialVersionUID = 7256318525839341507L;
+		// private static final long serialVersionUID = 7256318525839341507L;
+		private List< Expr > impl = new ArrayList< Expr >();
 		
 		///////////////////////////
 
-		// public ExprList() {}
-		
 		public ExprList( Expr ... args ) {
 			for( Expr e : args )
-				add( e );
+				impl.add( e );
 		}
-
-		/******
-		public ExprList( Expr e1, Expr e2 ) {
-			add( e1 ); add( e2 );
-		}
-		
-		public ExprList( Expr e1, Expr e2, Expr e3 ) {
-			add( e1 ); add( e2 ); add( e3 );
-		}
-
-		public ExprList( Expr e1, Expr e2, Expr e3, Expr e4 ) {
-			add( e1 ); add( e2 ); add( e3 ); add( e4 );
-		}
-
-		******/
 
 		///////////////////////////
 
+		public int size() { return impl.size(); }
+		public Expr get( int i ) { return impl.get( i ); }
+		
+		public void add( Expr e ) { impl.add( e ); }
+		
+		///////////////////////////
+		
 		@Override
 		public int hashCode() {
 			return HashCodeBuilder.reflectionHashCode( this );
@@ -106,6 +97,28 @@ public interface Expr {
 		@Override
 		public boolean equals( Object o ) {
 			return EqualsBuilder.reflectionEquals( this, o );
+			/****
+			if( !( o instanceof ExprList ) ) 
+				return false;
+			
+			ExprList rhs = (ExprList)o;
+			if( size() != rhs.size() ) {
+				// Diag.println();				
+				return false;
+			}
+			else {
+				for( int i=0; i<size(); ++i ) {
+					// Diag.println( "<<" + get( i ) + ">>" );
+					// Diag.println( "<<" + rhs.get( i ) + ">>" );				
+					if( !get( i ).equals( rhs.get( i ) ) ) {
+						// Diag.println();						
+						return false;
+					}
+				}
+			}
+			
+			return true;
+			****/
 		}
 		
 		@Override
