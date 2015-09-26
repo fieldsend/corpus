@@ -20,14 +20,16 @@ lastModified = "19/09/2015"
 public class SchemeCorpus implements Corpus
 {
     private static Random randomGenerator = new Random();
-
+    private List<Program> programList = new ArrayList<>();
     private Map<Expr,List<Expr>> fragmentMap = new HashMap<>();
-    private int depth;
-    private double smoothing;
+    private final int DEPTH;
+    private final boolean SMOOTH;
+    private final double SMOOTHING;
 
     SchemeCorpus(int depth, double smoothing){
-        this.depth = depth;
-        this.smoothing = smoothing;
+        this.DEPTH = depth;
+        this.SMOOTHING = smoothing;
+        SMOOTH = (smoothing >0.0);
     }
 
     @Override
@@ -38,6 +40,7 @@ public class SchemeCorpus implements Corpus
     @Override
     public void addToCorpus(Program program){
         fragment(program.getProgramAsExpression());
+        programList.add(program);
     }
 
     @Override
@@ -48,15 +51,9 @@ public class SchemeCorpus implements Corpus
     @Override
     public double probabilityOfProgram(Program program){
         Expr expression = program.getProgramAsExpression();
-        if (depth == 0) // unigrams
-            return generateLogProbabilityOfProgram(expression);
-        if (depth == 1){ // bigrams
-            return generateLogProbabilityOfProgram(Expr.list(Expr.atom("start"), expression));
-        }
-        if (depth == 2) { //trigrams
-            return generateLogProbabilityOfProgram(Expr.list(Expr.atom("start"), Expr.atom("start"), expression));
-        }
-        return -1.0;
+        return (SMOOTH) ?
+        generateSmoothLogProbabilityOfProgram(wrap(expression,DEPTH)) :
+        generateLogProbabilityOfProgram(wrap(expression,DEPTH));     
     }
 
     @Override
@@ -66,7 +63,7 @@ public class SchemeCorpus implements Corpus
 
     private Expr generateMutation(Expr expression) {
         if (randomGenerator.nextDouble() < 0.3) 
-            return generateExpand(extract(expression,depth));
+            return generateExpand(extract(expression,DEPTH));
         else {
             if (expression instanceof Expr.ExprList){
                 Expr.ExprList mutated = Expr.list(((Expr.ExprList) expression).get(0));
@@ -80,8 +77,8 @@ public class SchemeCorpus implements Corpus
     }
 
     private double generateLogProbabilityOfProgram(Expr expression){
-        Expr fragHead = extract(expression, depth); 
-        Expr fragTail = extract(expression, depth+1);
+        Expr fragHead = extract(expression, DEPTH); 
+        Expr fragTail = extract(expression, DEPTH+1);
 
         if (fragHead.equals(fragTail)){
             return 0.0;
@@ -106,17 +103,17 @@ public class SchemeCorpus implements Corpus
     }
 
     private void fragment(Expr expression) {
-        if (depth == 0) // unigrams
-            generateFragment(expression);
-        if (depth == 1){ // bigrams
-            generateFragment(Expr.list(Expr.atom("start"), expression));
+        if (SMOOTH){
+            for (int i = 0; i<=DEPTH; i++)
+                generateFragment(wrap(expression,i),i);
+        } else {
+            generateFragment(wrap(expression,DEPTH),DEPTH);
         }
-        if (depth == 2) { //trigrams
-            generateFragment(Expr.list(Expr.atom("start"), Expr.atom("start"), expression));
-        }
+        // QUERY UNIFORM in python?
+        
     }
 
-    private void generateFragment(Expr expression){
+    private void generateFragment(Expr expression,int depth){
         Expr fragHead = extract(expression, depth); 
         Expr fragTail = extract(expression, depth+1);
 
@@ -127,7 +124,7 @@ public class SchemeCorpus implements Corpus
         if (expression instanceof Expr.ExprList){
             Expr.ExprList temp = (Expr.ExprList) expression;
             for (int i=1; i< temp.size(); i++){
-                generateFragment(temp.get(i));
+                generateFragment(temp.get(i), depth);
             }
         }
 
@@ -164,16 +161,8 @@ public class SchemeCorpus implements Corpus
         return expression; //expression not in list
     }
 
-    private Expr randomSolution(){
-        if (depth == 0) // unigrams
-            return generateExpand(Expr.list(Expr.atom("_")));
-        if (depth == 1){ // bigrams
-            return generateExpand(Expr.list(Expr.atom("start"), Expr.atom("_")));
-        }
-        if (depth == 2) { //trigrams
-            return generateExpand(Expr.list(Expr.atom("start"), Expr.atom("start"),Expr.atom("_")));
-        }
-        return null;
+    private Expr randomSolution(){  
+        return unwrap(generateExpand(wrap(Expr.list(Expr.atom("_")),DEPTH)),DEPTH);
     }
 
     /*
@@ -210,7 +199,7 @@ public class SchemeCorpus implements Corpus
     }
 
     private Expr extendFragment(Expr fragment){
-        if (((fragmentMap.containsKey(fragment)) && (randomGenerator.nextDouble() < smoothing)) || ((fragment instanceof Expr.ExprList)==false))
+        if (((fragmentMap.containsKey(fragment)) && (randomGenerator.nextDouble() < SMOOTHING)) || ((fragment instanceof Expr.ExprList)==false))
             return getRandomListMember(fragmentMap.get(fragment));
         return atomOrListOfFirstFollowedByFunctionOnRest(fragment, p -> {return extendFragment(p);});
     }
@@ -239,15 +228,15 @@ public class SchemeCorpus implements Corpus
         if (fragmentMap.keySet().contains(fragHead)){
             // if yes what is the probability of the tail given teh whole head?
             double probWhole = 1.0 * ((double) Collections.frequency(fragmentMap.get(fragHead),fragTail))/fragmentMap.get(fragHead).size();
-            return smoothing*probWhole + (1.0-smoothing)*probLower;
+            return SMOOTHING*probWhole + (1.0-SMOOTHING)*probLower;
         }
         return probLower;    
     }
    
  
     private double generateSmoothLogProbabilityOfProgram(Expr fragment) {
-        Expr fragHead = extract(fragment,depth);
-        Expr fragTail = extract(fragment,depth+1);
+        Expr fragHead = extract(fragment,DEPTH);
+        Expr fragTail = extract(fragment,DEPTH+1);
         
         if (fragHead.equals(fragTail))
             return 0.0;
@@ -264,6 +253,82 @@ public class SchemeCorpus implements Corpus
         return logProb;
     }
     
+    /*
+     * number of levels in a tree
+     */
+    private int depth(Expr expression) {
+        if (expression instanceof Expr.ExprList) {
+            Expr.ExprList temp = (Expr.ExprList) expression;
+            if (temp.size()==1)
+                return 1;
+            int maxDepth = 0;
+            for (int i=1; i<temp.size(); i++)
+                maxDepth = Math.max(maxDepth, 1+ depth(temp.get(i)));
+            return maxDepth;
+        }
+        return 1;
+    }
+    
+    /*
+     * number of nodes in a tree
+     */
+    private int size(Expr expression) {
+        if (expression instanceof Expr.ExprList) {
+            Expr.ExprList temp = (Expr.ExprList) expression;
+            if (temp.size()==1)
+                return 1;
+            int size = 1;
+            for (int i=1; i<temp.size(); i++)
+                size += size(temp.get(i));
+            return size;
+        }
+        return 1;
+    }
+    /*
+     * missing perplexity methods
+     * 
+     */
+    private double averageDepth(){
+        double average = 0.0;
+        for (Program p : programList)
+            average += depth(p.getProgramAsExpression());
+        return average;
+    }
+    
+    private double averageSize(){
+        double average = 0.0;
+        for (Program p : programList)
+            average += size(p.getProgramAsExpression());
+        return average;
+    }
+    
+    private double modelSize(){
+        return fragmentMap.size();
+    }
+    /*
+     * Missing vocabulary methods
+     */
+    
+    private Expr wrap(Expr expression, int depth){
+        Expr wrappedList = expression;
+        for (int i=0; i<depth; i++){
+            wrappedList = Expr.list(Expr.atom("start"), wrappedList);
+        }
+        return expression;
+    }
+    
+    private Expr unwrap(Expr expression, int depth){
+        for (int i=0; i<depth; i++){
+            expression = ((Expr.ExprList) expression).get(1);
+        }
+        return expression;
+    }
+    
+    private Expr expand(Expr fragment) {
+        return (SMOOTH) ? 
+        generateSmoothExpand(fragment) :
+        generateExpand(fragment);
+    }
     
     @FunctionalInterface
     private interface Expander{
