@@ -57,7 +57,6 @@ class SchemeProgram implements Program
     throws Exception {
         this.programAsString = s;
         this.expression = parser.parse(s);
-        System.out.println(expression.toString());
     }
 
     @Override
