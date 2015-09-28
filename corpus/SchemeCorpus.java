@@ -116,7 +116,6 @@ public class SchemeCorpus implements Corpus
     private void generateFragment(Expr expression,int depth){
         Expr fragHead = extract(expression, depth); 
         Expr fragTail = extract(expression, depth+1);
-
         // if head and tail are not the same, so not at bottom
         if (fragHead.equals(fragTail)==false) {
             addFragment(fragHead, fragTail);
@@ -134,7 +133,7 @@ public class SchemeCorpus implements Corpus
         if (fragmentMap.containsKey(fragHead))
             fragmentMap.get(fragHead).add(fragTail);
         else {
-            System.out.println(fragHead);
+            //System.out.println(fragHead);
             List<Expr> temp = new ArrayList<>();
             temp.add(fragTail);
             fragmentMap.put(fragHead,temp);
@@ -162,7 +161,7 @@ public class SchemeCorpus implements Corpus
     }
 
     private Expr randomSolution(){  
-        return unwrap(generateExpand(wrap(Expr.list(Expr.atom("_")),DEPTH)),DEPTH);
+        return unwrap(generateExpand(wrap(Expr.atom("_"),DEPTH)),DEPTH);
     }
 
     /*
@@ -171,9 +170,9 @@ public class SchemeCorpus implements Corpus
      * using the tree extension rules in the map of fragments to extended fragments
      */
     private Expr generateExpand(Expr fragment) {
-        if (fragmentMap.containsKey(fragment)==false)
+        if (fragmentMap.containsKey(fragment)==false){
             return fragment; // if fragment doesn't exist in map keys, return argument
-
+        }
         Expr extendedFragment = getRandomListMember(fragmentMap.get(fragment));
         return atomOrListOfFirstFollowedByFunctionOnRest(extendedFragment, p -> {return generateExpand(p);});
     }
@@ -310,9 +309,8 @@ public class SchemeCorpus implements Corpus
      */
     
     private Expr wrap(Expr expression, int depth){
-        Expr wrappedList = expression;
         for (int i=0; i<depth; i++){
-            wrappedList = Expr.list(Expr.atom("start"), wrappedList);
+            expression = Expr.list(Expr.atom("start"), expression);
         }
         return expression;
     }
