@@ -22,50 +22,25 @@ public class CorpusGP
 {
 
     public static void main(String[] args) throws Exception {
-        JScheme js = new JScheme();
         // parse programs
 
         // gets all .ss files in path and pulls out file contents
         // as a string
-        List< Tuple2< Path, String > > sources = Utils.corpus();
-        List<String> testList = new ArrayList<>();
         List<Program> programs = new ArrayList<>();
-        Corpus corpus = new SchemeCorpus(2,0.8);
-        List<Tuple2<Program,Program>> programAndTests = new ArrayList<>();
-
-        // make list containing program and testcase pairs - not efficient as is!
-        for (Tuple2<Path, String> t : sources){
-            String temp = t.getFirst().toString();
-            if (temp.endsWith("_tests.ss")){ // tests exist, so get corresponding program
-
-                Program tests = new SchemeProgram();
-                tests.setProgram(t.getSecond());
-                String programName = temp.substring(0,temp.length()-9) + ".ss";
-                for (Tuple2<Path, String> p : sources){
-                    if (p.getFirst().toString().equals(programName)){
-                        testList.add(temp);
-                        Program program = new SchemeProgram();
-                        program.setProgram(p.getSecond());
-                        programAndTests.add(Tuple2.cons(program,tests));
-                        System.out.println("Adding to corpus");
-                        corpus.addToCorpus(program);
-                        System.out.println("Added");
-
-                        break;
-                    }
-                }
-            }
+        Corpus corpus = new SchemeCorpus(3,0.0); //0.8
+        List<Tuple2<Program,Program>> programAndTests = getProgramsAndTests();
+        for (Tuple2<Program,Program> t : programAndTests){
+            System.out.println("Adding to corpus");
+            corpus.addToCorpus(t.getFirst());
+            System.out.println("Added");
         }
-
         int index = 0; 
-        List<String> errorInducing = new ArrayList<>();
         //errorInducing.add("/Users/jefields/Desktop/desk/github_repos/corpus/resources/corpus/recursive-programs/count_tests.ss");
         double[] results = new double[programAndTests.size()];
         //js.load("(define (atom? x) (not (pair? x)))");
 
         for (Tuple2<Program, Program> p : programAndTests) {
             results[index] = 0.0;
-            if ((errorInducing.contains(testList.get(index))==false) && (p.getFirst().getProgramAsString().contains("atom")==false)){
                 corpus.addToCorpus(p.getFirst());
 
                 /*
@@ -80,7 +55,6 @@ public class CorpusGP
                 if (results[index]<1.0)
                 System.out.println("Error: " + results[index]);
                  */ 
-            }
             index++;
         }
         /*
@@ -104,40 +78,98 @@ public class CorpusGP
         System.out.println("Random sol: " + currExpr);
         System.out.println("Random sol fitness: " + fitCurr);
         double fitChild;
-        int evals = 1;
+        int timeouts = 0, runtimeErrors = 0, syntaxErrors = 0, evals = 1;
         while (fitCurr!=1.0){
             currExpr = corpus.generateRandomExpression();
             currentProgram.setProgram(currExpr);
             fitChild = getFitness(currentProgram.getProgramAsString(), targets, 10);
-            //if (evals % 100 == 0)
-                System.out.print(".");
+            if (fitChild ==-3.0)
+                timeouts++;
+            else if (fitChild ==-2.0)
+                runtimeErrors++;
+            else if (fitChild ==-1.0)
+                syntaxErrors++;
+            if (evals % 100 == 0)
+                System.out.println("best fitness so far: " + fitCurr);
+            System.out.print(".");
             if (fitChild>fitCurr){
                 Program program = new SchemeProgram();
                 program.setProgram(currExpr);
                 corpus.addToCorpus(program);
+                fitCurr = fitChild;
             }
             evals++;
         }
+        System.out.println();
         System.out.println("Total evals to hit:" + evals);
+        System.out.println("Total timeouts:" + timeouts);
+        System.out.println("Total syntax errors:" + syntaxErrors);
+        System.out.println("Total runtime errors:" + runtimeErrors);
+        System.exit(0);
     }
-
-    private static double getFitness(String program, String targets, int maxSeconds){
-        ExecutorService executor = Executors.newCachedThreadPool();
-        Callable<Double> task = new Callable<Double>() {
-                public Double call() {
-                    return fitnessCall(program,targets);
+    
+    static List<Tuple2<Program,Program>> getProgramsAndTests()
+        throws Exception {
+        List<String> testList = new ArrayList<>();
+        
+        List< Tuple2< Path, String > > sources = Utils.corpus();
+        List<Tuple2<Program,Program>> programAndTests = new ArrayList<>();
+        // make list containing program and testcase pairs - not efficient as is!
+        for (Tuple2<Path, String> t : sources){
+            String temp = t.getFirst().toString();
+            //if (temp.endsWith("extended_tests.ss")){ // tests exist, so get corresponding program
+            if (temp.endsWith("tests.ss")){ // tests exist, so get corresponding program
+                System.out.println("processing pairs: "+ temp);
+                Program tests = new SchemeProgram();
+                tests.setProgram(t.getSecond());
+                tests.setName(temp);
+                String programName = temp.substring(0,temp.length()-9) + ".ss";
+                //String programName = temp.substring(0,temp.length()-17) + ".ss";
+                
+                for (Tuple2<Path, String> p : sources){
+                    if (p.getFirst().toString().equals(programName)){
+                        testList.add(temp);
+                        Program program = new SchemeProgram();
+                        program.setProgram(p.getSecond());
+                        programAndTests.add(Tuple2.cons(program,tests));
+                        break;
+                    }
                 }
-            };
+            }
+        }
+        return programAndTests;
+    }
+    
+    static double getFitness(String program, String targets, int maxSeconds){
+        /*ExecutorService executor = Executors.newCachedThreadPool();
+        Callable<Double> task = new Callable<Double>() {
+        public Double call() {
+        return fitnessCall(program,targets);
+        }
+        };
         Future<Double> future = executor.submit(task);
         try {
-            return future.get(maxSeconds, TimeUnit.SECONDS); 
+        return future.get(maxSeconds, TimeUnit.SECONDS); 
         } catch (Exception ex) {
-            return 0.0; // any timeout or execution exceptions should result in a zero fitness
+        return 0.0; // any timeout or execution exceptions should result in a zero fitness
         } finally {
-            future.cancel(true); // try to interrupt
-            if (!executor.isTerminated())
-                executor.shutdownNow(); // Stop the code that hasn't finished.
+        future.cancel(true); // try to interrupt
+        if (!executor.isTerminated())
+        executor.shutdownNow(); // Stop the code that hasn't finished.
+        }*/
+        final DoubleWrapper result = new DoubleWrapper();
+        ExecutorService executor = Executors.newSingleThreadExecutor();
+        Future future = executor.submit(new Thread(){public void run(){result.setValue(fitnessCall(program,targets));}});
+        try { 
+            future.get(maxSeconds, TimeUnit.SECONDS); 
         }
+        catch (Exception ex) {
+            System.out.print("to");
+            result.setValue(-3.0); // indicate timeout issue
+        } 
+        if (!executor.isTerminated())
+            executor.shutdownNow(); 
+        return result.getValue();
     }
     // resources/corpus/tls-08-lambda-the-ultimate/rember-f2_tests.ss
 
@@ -148,8 +180,8 @@ public class CorpusGP
         try {
             js.load(program);
         } catch (Exception e) {
-            System.out.println("Program error");
-            return 0.0; // problem with program
+            System.out.print("ei");
+            return -1.0; // indicate syntax error with program
         }
         int numberOfTests = Integer.parseInt(js.eval("(length testcases)").toString());
         String start = "(list (apply prog (car (list-ref testcases ";
@@ -163,13 +195,31 @@ public class CorpusGP
             try {
                 if (js.eval("(equal? (list (apply prog (car (list-ref testcases " + i + ")))) (cdr (list-ref testcases " + i + ")))").toString().equals("true")){
                     passed++;
+                } else if(js.eval("(string=? (list (apply prog (car (list-ref testcases " + i + ")))) (cdr (list-ref testcases " + i + ")))").toString().equals("true")){
+                    passed++; //use when comparing procedures
+                }
+                else {
+                    System.out.println("INPUT: " + js.eval("(car (list-ref testcases " + i + "))").toString());
+                    System.out.println("WANTED: " + js.eval("(cdr (list-ref testcases " + i + "))").toString());
+                    System.out.println("RETURNED: " + js.eval("(list (apply prog (car (list-ref testcases " + i + "))))").toString());
                 }
             } catch (Exception e) {
-                System.out.println("Program error");
-                return 0.0; // problem with program processing the inputs
+                System.out.println(e.getMessage());
+                return -2.0; // problem with program processing the inputs/running
             }
             //System.out.println(js.eval("(cdr (list-ref testcases " + i + "))"));
         }
         return passed/((double)numberOfTests);
+    }
+    
+    private static class DoubleWrapper {
+        private double value;
+        
+        private double getValue(){
+            return value;
+        }
+        private void setValue(double value){
+            this.value = value;
+        }
     }
 }

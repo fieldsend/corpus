@@ -25,8 +25,10 @@ class SchemeProgram implements Program
 {
     private static Random randomGenerator = new Random();
     private static Parser parser = new Parser();
+    
     private Expr expression;
     private String programAsString;
+    private String name = ""; // may never be set, so have as empty string
     private int fitness = 0; 
     private Path file;
     //private AST tree;
@@ -67,6 +69,16 @@ class SchemeProgram implements Program
     @Override
     public String getProgramAsString() {
         return programAsString;
+    }    
+   
+    @Override
+    public String getName() {
+        return name;
+    }    
+   
+    @Override
+    public void setName(String name) {
+        this.name = name;
     }    
    
 }

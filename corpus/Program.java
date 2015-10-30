@@ -16,6 +16,8 @@ public interface Program
     void setProgram(Path file) throws IOException, Exception;
     void setProgram(Expr expression);
     void setProgram(String s) throws Exception;
+    void setName(String s);
+    String getName();
     Expr getProgramAsExpression();
     String getProgramAsString();
 }

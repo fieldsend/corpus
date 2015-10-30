@@ -79,6 +79,7 @@ public final class Utils {
 	}
 	
 	static List< Path > corpusDirectories() {
+		//String root = System.getProperty( "user.dir" )  + "/resources/corpus_extended/";
 		String root = System.getProperty( "user.dir" )  + "/resources/corpus/";
 		String [] files = new File( root ).list();
 		return Arrays.asList( files ).stream().map( 
