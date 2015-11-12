@@ -65,16 +65,18 @@ public class TestGenerator
         // now apply in turn each test, in each test case, for every program, to each program
         int i=0;
         System.out.println("GENERATE TESTS");
-        for (Tuple2<Program,Program> p : programAndTests){
+        for (Tuple2<Program,Program> p : programAndTests){ // for each program/test tuple p 
             Set<Tuple2<String,String>> allProcessableQuotedTests = new HashSet<>();
             Set<Tuple2<String,String>> allProcessableQuasiquotedTests = new HashSet<>();
-            for (Tuple2<Program,Program> t : programAndTests){
-                List<Tuple2<String,String>> processedTests = getProcessed(p.getFirst().getProgramAsString(),t.getSecond().getProgramAsString());
-                // processedTests now contains indices of all tests passed
-                if (t.getSecond().getProgramAsString().contains("  `("))
-                    allProcessableQuasiquotedTests.addAll(processedTests);
-                else
-                    allProcessableQuotedTests.addAll(processedTests);
+            for (Tuple2<Program,Program> t : programAndTests){ // for each program/test tuple t
+                if (t != p){ // don't use tests designed for the program 
+                    List<Tuple2<String,String>> processedTests = getProcessed(p.getFirst().getProgramAsString(),t.getSecond().getProgramAsString(),p.getSecond().getProgramAsString());
+                    // processedTests now contains indices of all tests passed
+                    if (t.getSecond().getProgramAsString().contains("  `("))
+                        allProcessableQuasiquotedTests.addAll(processedTests);
+                    else
+                        allProcessableQuotedTests.addAll(processedTests);
+                }
             }
             //programAndLegalTests.add(Tuple2.cons(p.getFirst(),allProcessableTests));
             int oldNumber = getNumberOfTests(p.getSecond().getProgramAsString());
@@ -129,7 +131,30 @@ public class TestGenerator
        return Integer.parseInt(js.eval("(length testcases)").toString());
     }
     
-    private static List<Tuple2<String,String>> getProcessed(String program, String testcases){
+    private static boolean testNotInOriginalTestCases(String testcases, int element, String notAllowedTestcases){
+        // check if the head of the 'element' member of test cases is a match for the
+        // head of any element of the notAllowedTestCases, if so returns false, if no match found, 
+        // returns true
+        
+        JScheme js = new JScheme();
+        
+        js.load(notAllowedTestcases);
+        js.eval("(define notAllowed testcases)"); // variable in loaded notAllowedTestcases is called testcases, 
+        // so create new variable called notAllowed with its contents before it is redefined in the next line
+        js.load(testcases);
+        int numberOfNotAllowedTests = Integer.parseInt(js.eval("(length notAllowed)").toString());
+        for (int i=0; i<numberOfNotAllowedTests; i++){
+                if (js.eval("(equal? (car (list-ref testcases " + element + ")) (car (list-ref notAllowed " + i + ")))").toString().equals("true"))
+                    return false;
+                /*else if(js.eval("(string=? (car (list-ref testcases " + element + ")) (car (list-ref notAllowed " + i + ")))").toString().equals("true"))
+                    return false;   
+                } catch (SchemeException e) {
+                // for when string=? is not appropriate
+                }*/
+        } 
+        return true;
+    }
+    private static List<Tuple2<String,String>> getProcessed(String program, String testcases, String notAllowedTestCases){
         final List<Tuple2<String,String>> result = new ArrayList<>();
         JScheme js = new JScheme();
         js.load(testcases);
@@ -139,26 +164,28 @@ public class TestGenerator
         String start = "(list (apply prog (car (list-ref testcases ";
         String end = "))))";
         for (int i=0; i<numberOfTests; i++){
-            ExecutorService executor = Executors.newSingleThreadExecutor();
-            final int index = i;
-            Future future = executor.submit(new Thread(){public void run(){
-                String s = processTest(js,index);
-                if(s!=null) {
-                    String input = js.eval("(list (car (list-ref testcases " + index + ")))").toString();
-                    if (proc)
-                        if (inputAProcedure(testcases, input))
-                            input = "(," + input.substring(1,input.length());
-                    
-                    result.add(Tuple2.cons(s,input));
-                }}});
-            try { 
-                future.get(maxSeconds, TimeUnit.SECONDS); 
+            if (testNotInOriginalTestCases(testcases,i,notAllowedTestCases)){
+                ExecutorService executor = Executors.newSingleThreadExecutor();
+                final int index = i;
+                Future future = executor.submit(new Thread(){public void run(){
+                    String s = processTest(js,index);
+                    if(s!=null) {
+                        String input = js.eval("(list (car (list-ref testcases " + index + ")))").toString();
+                        if (proc)
+                            if (inputAProcedure(testcases, input))
+                                input = "(," + input.substring(1,input.length());
+                        
+                        result.add(Tuple2.cons(s,input));
+                    }}});
+                try { 
+                    future.get(maxSeconds, TimeUnit.SECONDS); 
+                }
+                catch (Exception ex) {
+                    System.out.print("to");
+                } 
+                if (!executor.isTerminated())
+                    executor.shutdownNow(); 
             }
-            catch (Exception ex) {
-                System.out.print("to");
-            } 
-            if (!executor.isTerminated())
-                executor.shutdownNow(); 
         }
         return result;
     }
